@@ -33,7 +33,7 @@ app.MapGet("/weatherforecast", () =>
     var forecast = Enumerable.Range(1, 5).Select(index =>
         new FakeWeatherForecast
         (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
+            DateTime.Now.AddDays(index),
             Random.Shared.Next(-20, 55),
             summaries[Random.Shared.Next(summaries.Length)]
         ))
@@ -61,7 +61,7 @@ app.MapPost("/weatherforecast", async (HttpContext context, [FromBody] WeatherFo
         var forecast = new WeatherForecast
         {
             id = Guid.NewGuid().ToString(),
-            date = dto.date.ToDateTime(TimeOnly.MinValue),
+            datetime = dto.datetime,
             temperatureC = dto.temperatureC,
             summary = dto.summary,
             partitionKey = "forecast"
@@ -81,7 +81,8 @@ app.MapDefaultEndpoints();
 
 app.Run();
 
-record FakeWeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
+record FakeWeatherForecast(DateTime datetime, int temperatureC, string? summary)
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public int temperatureF => 32 + (int)(temperatureC / 0.5556);
 }
+
