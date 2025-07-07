@@ -1,6 +1,7 @@
 using Microsoft.Azure.Cosmos;
 using MyAspireApp.ApiService;
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -50,23 +51,24 @@ app.MapPost("/weatherforecast", async (HttpContext context, [FromBody] WeatherFo
         const string databaseId = "WeatherDb";
         const string containerId = "Forecasts";
 
+
         var dbResponse = await cosmosClient.CreateDatabaseIfNotExistsAsync(databaseId);
         var db = dbResponse.Database;
-        await db.CreateContainerIfNotExistsAsync(containerId, "/PartitionKey");
+        await db.CreateContainerIfNotExistsAsync(containerId, "/partitionKey");
 
         var container = db.GetContainer("Forecasts");
 
         var forecast = new WeatherForecast
         {
-            Id = Guid.NewGuid().ToString(),
-            Date = dto.Date.ToDateTime(TimeOnly.MinValue),
-            TemperatureC = dto.TemperatureC,
-            Summary = dto.Summary,
-            PartitionKey = "forecast"
+            id = Guid.NewGuid().ToString(),
+            date = dto.date.ToDateTime(TimeOnly.MinValue),
+            temperatureC = dto.temperatureC,
+            summary = dto.summary,
+            partitionKey = "forecast"
         };
 
-        await container.CreateItemAsync(forecast, new PartitionKey(forecast.PartitionKey));
-        return Results.Created($"/weatherforecast/{forecast.Id}", forecast);
+        await container.CreateItemAsync(forecast, new PartitionKey(forecast.partitionKey));
+        return Results.Created($"/weatherforecast/{forecast.id}", forecast);
     }
     catch (Exception ex)
     {

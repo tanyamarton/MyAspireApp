@@ -1,6 +1,6 @@
 namespace MyAspireApp.ApiService;
 
-public record WeatherForecastDto(DateOnly Date, int TemperatureC, string? Summary)
+public record WeatherForecastDto(DateOnly date, int temperatureC, string? summary)
 {
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
+    public int temperatureF => 32 + (int)(temperatureC / 0.5556);
 }

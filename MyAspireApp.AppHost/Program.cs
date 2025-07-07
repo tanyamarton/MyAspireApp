@@ -18,7 +18,8 @@ var cache = builder.AddRedis("cache");
 // add .ApiService
 var apiService = builder.AddProject<Projects.MyAspireApp_ApiService>("apiservice")
     .WithReference(cache)
-    .WithReference(cosmos);
+    .WithReference(cosmos); 
+
 
 // the cache and apiService objects that are needed for the build can be created by the builder
 
