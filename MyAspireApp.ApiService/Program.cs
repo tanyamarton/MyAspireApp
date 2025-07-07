@@ -42,6 +42,29 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
+//get the weather forecast for a specific forecast id
+app.MapGet("/weatherforecast/{id}", async (HttpContext context, string id) =>
+{
+    try
+    {
+        var cosmosClient = context.RequestServices.GetRequiredService<CosmosClient>();
+        const string databaseId = "WeatherDb";
+        const string containerId = "Forecasts";
+        var container = cosmosClient.GetContainer(databaseId, containerId);
+        var response = await container.ReadItemAsync<WeatherForecast>(id, new PartitionKey("forecast"));
+        return Results.Ok(response.Resource);
+    }
+    catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+    {
+        return Results.NotFound();
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(title: "Exception thrown", detail: ex.ToString());
+    }
+})
+.WithName("GetWeatherForecastById");
+
 app.MapPost("/weatherforecast", async (HttpContext context, [FromBody] WeatherForecastDto dto) =>
 {
     try
@@ -58,10 +81,13 @@ app.MapPost("/weatherforecast", async (HttpContext context, [FromBody] WeatherFo
 
         var container = db.GetContainer("Forecasts");
 
+        var pacificTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+        var nowPacific = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, pacificTimeZone);
+
         var forecast = new WeatherForecast
         {
             id = Guid.NewGuid().ToString(),
-            datetime = dto.datetime,
+            datetime = dto.datetime ?? nowPacific,
             temperatureC = dto.temperatureC,
             summary = dto.summary,
             partitionKey = "forecast"
