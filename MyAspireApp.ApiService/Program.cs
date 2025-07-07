@@ -28,22 +28,9 @@ if (app.Environment.IsDevelopment())
 
 string[] summaries = ["Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"];
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new FakeWeatherForecast
-        (
-            DateTime.Now.AddDays(index),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
 
 //a get to /weatherforecast that returns all the weather forecasts in the database  
-app.MapGet("/weatherforecast/list", async (HttpContext context) =>
+app.MapGet("/weatherforecast", async (HttpContext context) =>
 {
     try
     {
