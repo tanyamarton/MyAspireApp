@@ -7,7 +7,9 @@ var cosmos = builder.AddAzureCosmosDB("cosmos-db")
         .RunAsPreviewEmulator(
         emulator =>
         {
-            emulator.WithDataExplorer();
+            emulator.WithDataExplorer()
+                    .WithLifetime(ContainerLifetime.Persistent)
+                    .WithDataVolume();
         });
 
 var db = cosmos.AddCosmosDatabase("WeatherDb");

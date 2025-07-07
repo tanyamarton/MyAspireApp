@@ -42,6 +42,33 @@ app.MapGet("/weatherforecast", () =>
 })
 .WithName("GetWeatherForecast");
 
+//a get to /weatherforecast that returns all the weather forecasts in the database  
+app.MapGet("/weatherforecast/list", async (HttpContext context) =>
+{
+    try
+    {
+        var cosmosClient = context.RequestServices.GetRequiredService<CosmosClient>();
+        const string databaseId = "WeatherDb";
+        const string containerId = "Forecasts";
+        var container = cosmosClient.GetContainer(databaseId, containerId);
+        var query = new QueryDefinition("SELECT * FROM c WHERE c.partitionKey = @partitionKey")
+            .WithParameter("@partitionKey", "forecast");
+        var iterator = container.GetItemQueryIterator<WeatherForecast>(query);
+        var results = new List<WeatherForecast>();
+        while (iterator.HasMoreResults)
+        {
+            var response = await iterator.ReadNextAsync();
+            results.AddRange(response);
+        }
+        return Results.Ok(results);
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem(title: "Exception thrown", detail: ex.ToString());
+    }
+})
+.WithName("ListWeatherForecasts");
+
 //get the weather forecast for a specific forecast id
 app.MapGet("/weatherforecast/{id}", async (HttpContext context, string id) =>
 {
