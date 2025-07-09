@@ -1,31 +1,31 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net.Http.Json;
+﻿using System.Net.Http.Json;
+
 
 namespace MyAspireApp.Tests;
 
+[Trait("Type", "External")]
 public class ApiTests
 {
+
+    private readonly HttpClient httpClient;
+
+    public ApiTests()
+    {
+        // Use the port where apiservice is listening in the running Aspire AppHost
+        httpClient = new HttpClient
+        {
+            BaseAddress = new Uri("https://localhost:7577") // replace with actual port from Aspire dashboard
+        };
+
+    }
+
     [Fact]
     public async Task GetWeatherForecastReturnsOkStatusCode()
     {
-        // Arrange
-        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.MyAspireApp_AppHost>();
-        appHost.Services.ConfigureHttpClientDefaults(clientBuilder =>
-        {
-            clientBuilder.AddStandardResilienceHandler();
-        });
-        // To output logs to the xUnit.net ITestOutputHelper, consider adding a package from https://www.nuget.org/packages?q=xunit+logging
-        await using var app = await appHost.BuildAsync();
-        var resourceNotificationService = app.Services.GetRequiredService<ResourceNotificationService>();
-        await app.StartAsync();
+
         // Act
-        var httpClient = app.CreateHttpClient("apiservice");
-        await resourceNotificationService.WaitForResourceAsync("apiservice", KnownResourceStates.Running).WaitAsync(TimeSpan.FromSeconds(30));
         var response = await httpClient.GetAsync("/weatherforecast");
+
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
     }
@@ -33,20 +33,7 @@ public class ApiTests
     [Fact]
     public async Task PostWeatherForecastReturnsOkStatusCode()
     {
-        // Arrange
-        var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.MyAspireApp_AppHost>();
-        appHost.Services.ConfigureHttpClientDefaults(clientBuilder =>
-        {
-            clientBuilder.AddStandardResilienceHandler();
-        });
-        // To output logs to the xUnit.net ITestOutputHelper, consider adding a package from https://www.nuget.org/packages?q=xunit+logging
-        await using var app = await appHost.BuildAsync();
-        var resourceNotificationService = app.Services.GetRequiredService<ResourceNotificationService>();
-        await app.StartAsync();
-        // Act
-        var httpClient = app.CreateHttpClient("apiservice");
-        await resourceNotificationService.WaitForResourceAsync("apiservice", KnownResourceStates.Running).WaitAsync(TimeSpan.FromSeconds(30));
-        
+        // Arrange        
         var forecast = new
         {
             datetime = DateTime.UtcNow,
@@ -54,6 +41,7 @@ public class ApiTests
             summary = "Sunny"
         };
         
+        // Act
         var response = await httpClient.PostAsJsonAsync("/weatherforecast", forecast);
         
         // Assert

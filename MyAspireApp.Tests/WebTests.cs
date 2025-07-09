@@ -1,5 +1,6 @@
 namespace MyAspireApp.Tests;
 
+[Trait("Type", "AspireInternal")]
 public class WebTests
 {
     [Fact]
